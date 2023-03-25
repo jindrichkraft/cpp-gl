@@ -36,9 +36,9 @@ int main()
   // Vertices
   GLfloat vertices[] =
   {
-    -0.5f, -0.5f * float(sqrt(3)) / 3, 0.f,
-     0.5f, -0.5f * float(sqrt(3)) / 3, 0.f,
-     0.f,   0.5f * float(sqrt(3)) * 2, 0.f
+    -0.5f, -0.5f * float(sqrt(3)) / 3,     0.f,
+     0.5f, -0.5f * float(sqrt(3)) / 3,     0.f,
+     0.f,   0.5f * float(sqrt(3)) * 2 / 3, 0.f
   };
 
   // Creating the GLFW window
@@ -92,20 +92,43 @@ int main()
   glAttachShader(shaderProgram, fragmentShader);
   glLinkProgram(shaderProgram);
 
+  // Cleaning up shaders
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
 
+  // VAO and VBO
+  GLuint VAO, VBO;
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+
   // Clearing the color buffer
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-  glClearColor(0.68f, 0.78f, 0.62f, 1.f);
-  glClear(GL_COLOR_BUFFER_BIT);
   glfwSwapBuffers(window);
 
-  // Main loop
+  // Viewport
   while (!glfwWindowShouldClose(window))
   {
+    glClearColor(0.68f, 0.78f, 0.62f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glUseProgram(shaderProgram);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glfwSwapBuffers(window);
+
     glfwPollEvents();
   }
+
+  // Deleting the VAO and VBO
+  glDeleteVertexArrays(1, &VAO);
+  glDeleteBuffers(1, &VBO);
+  glDeleteProgram(shaderProgram);
 
   // Cleaning up and exitting
   glfwDestroyWindow(window);
